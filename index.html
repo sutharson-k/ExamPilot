@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamPilot - AI Exam Preparation Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- SIDEBAR NAVIGATION -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="fas fa-rocket"></i>
+        <span>ExamPilot</span>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link active" data-view="dashboard"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+      <li><a href="#" class="nav-link" data-view="timetable"><i class="fas fa-calendar-alt"></i><span>Timetable</span></a></li>
+      <li><a href="#" class="nav-link" data-view="checklist"><i class="fas fa-tasks"></i><span>Checklist</span></a></li>
+      <li><a href="#" class="nav-link" data-view="practice"><i class="fas fa-brain"></i><span>Practice</span></a></li>
+      <li><a href="#" class="nav-link" data-view="materials"><i class="fas fa-folder-open"></i><span>Materials</span></a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="resetBtn" class="reset-btn"><i class="fas fa-redo-alt"></i><span>Reset All</span></button>
+    </div>
+  </nav>
+
+  <!-- MOBILE HEADER -->
+  <header class="mobile-header">
+    <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+    <div class="logo-small"><i class="fas fa-rocket"></i> ExamPilot</div>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="main-content" id="mainContent">
+
+    <!-- ==================== SETUP VIEW ==================== -->
+    <section class="view setup-view" id="setupView">
+      <div class="setup-container">
+        <div class="setup-hero">
+          <div class="hero-icon"><i class="fas fa-rocket"></i></div>
+          <h1>Welcome to <span class="gradient-text">ExamPilot</span></h1>
+          <p>Your AI-powered exam preparation planner. Add your subjects, set your exam dates, and let us create the perfect study plan for you.</p>
+        </div>
+
+        <div class="setup-form-card">
+          <h2><i class="fas fa-clock"></i> Daily Study Hours</h2>
+          <div class="hours-input-group">
+            <label for="dailyHours">How many hours can you study per day?</label>
+            <div class="hours-slider-group">
+              <input type="range" id="dailyHours" min="1" max="16" value="6" class="hours-slider">
+              <span class="hours-value" id="hoursValue">6 hrs</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-form-card">
+          <h2><i class="fas fa-book"></i> Your Subjects</h2>
+          <div id="subjectsList" class="subjects-list">
+            <!-- Subject entries will be added here -->
+          </div>
+          <button id="addSubjectBtn" class="btn btn-outline"><i class="fas fa-plus"></i> Add Subject</button>
+        </div>
+
+        <!-- Subject Entry Template (cloned by JS) -->
+        <template id="subjectTemplate">
+          <div class="subject-entry">
+            <div class="subject-entry-header">
+              <span class="subject-number">Subject 1</span>
+              <button class="remove-subject-btn" title="Remove"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="subject-fields">
+              <div class="field-group">
+                <label>Subject Name</label>
+                <input type="text" class="subject-name" placeholder="e.g., Mathematics" required>
+              </div>
+              <div class="field-group">
+                <label>Exam Date</label>
+                <input type="date" class="exam-date" required>
+              </div>
+              <div class="field-group">
+                <label>Difficulty (1-5)</label>
+                <select class="subject-difficulty">
+                  <option value="1">1 - Easy</option>
+                  <option value="2">2 - Below Average</option>
+                  <option value="3" selected>3 - Average</option>
+                  <option value="4">4 - Hard</option>
+                  <option value="5">5 - Very Hard</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label>Key Topics (comma-separated)</label>
+                <input type="text" class="subject-topics" placeholder="e.g., Algebra, Calculus, Statistics">
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <button id="generatePlanBtn" class="btn btn-primary btn-large"><i class="fas fa-magic"></i> Generate My Study Plan</button>
+      </div>
+    </section>
+
+    <!-- ==================== DASHBOARD VIEW ==================== -->
+    <section class="view dashboard-view hidden" id="dashboardView">
+      <div class="view-header">
+        <h1><i class="fas fa-th-large"></i> Dashboard</h1>
+        <p class="view-subtitle" id="dashboardDate"></p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-exams">
+          <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="totalExams">0</span>
+            <span class="stat-label">Total Exams</span>
+          </div>
+        </div>
+        <div class="stat-card stat-days">
+          <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="daysUntilNext">0</span>
+            <span class="stat-label">Days to Next Exam</span>
+          </div>
+        </div>
+        <div class="stat-card stat-progress">
+          <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="overallProgress">0%</span>
+            <span class="stat-label">Overall Progress</span>
+          </div>
+        </div>
+        <div class="stat-card stat-streak">
+          <div class="stat-icon"><i class="fas fa-fire"></i></div>
+          <div class="stat-info">
+            <span class="stat-value" id="studyStreak">0</span>
+            <span class="stat-label">Day Streak</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Schedule -->
+      <div class="dashboard-grid">
+        <div class="card today-schedule-card">
+          <div class="card-header">
+            <h2><i class="fas fa-calendar-day"></i> Today's Schedule</h2>
+          </div>
+          <div class="card-body" id="todaySchedule">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- Upcoming Exams -->
+        <div class="card upcoming-exams-card">
+          <div class="card-header">
+            <h2><i class="fas fa-clock"></i> Upcoming Exams</h2>
+          </div>
+          <div class="card-body" id="upcomingExams">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject Progress -->
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-chart-bar"></i> Subject Progress</h2>
+        </div>
+        <div class="card-body" id="subjectProgress">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Missed Session Alert -->
+      <div class="card alert-card hidden" id="missedAlert">
+        <div class="card-header">
+          <h2><i class="fas fa-exclamation-triangle"></i> Schedule Adjusted</h2>
+        </div>
+        <div class="card-body" id="missedAlertBody">
+          <!-- Filled by JS when sessions are missed -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TIMETABLE VIEW ==================== -->
+    <section class="view timetable-view hidden" id="timetableView">
+      <div class="view-header">
+        <h1><i class="fas fa-calendar-alt"></i> Study Timetable</h1>
+        <div class="timetable-controls">
+          <button class="btn btn-sm" id="prevWeek"><i class="fas fa-chevron-left"></i></button>
+          <span id="weekLabel">This Week</span>
+          <button class="btn btn-sm" id="nextWeek"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="timetable-grid" id="timetableGrid">
+        <!-- Filled by JS -->
+      </div>
+      <div class="timetable-legend">
+        <span class="legend-item"><span class="legend-dot completed"></span> Completed</span>
+        <span class="legend-item"><span class="legend-dot missed"></span> Missed</span>
+        <span class="legend-item"><span class="legend-dot upcoming"></span> Upcoming</span>
+        <span class="legend-item"><span class="legend-dot today"></span> Today</span>
+      </div>
+    </section>
+
+    <!-- ==================== CHECKLIST VIEW ==================== -->
+    <section class="view checklist-view hidden" id="checklistView">
+      <div class="view-header">
+        <h1><i class="fas fa-tasks"></i> Revision Checklist</h1>
+        <div class="checklist-filter">
+          <select id="checklistFilter" class="filter-select">
+            <option value="all">All Subjects</option>
+            <!-- Options filled by JS -->
+          </select>
+        </div>
+      </div>
+      <div id="checklistContent" class="checklist-content">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- ==================== PRACTICE VIEW ==================== -->
+    <section class="view practice-view hidden" id="practiceView">
+      <div class="view-header">
+        <h1><i class="fas fa-brain"></i> Practice Questions</h1>
+        <div class="practice-controls">
+          <select id="practiceSubject" class="filter-select">
+            <option value="">Select Subject</option>
+          </select>
+          <select id="practiceDifficulty" class="filter-select">
+            <option value="all">All Difficulties</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+          <button id="generateQuestionsBtn" class="btn btn-primary"><i class="fas fa-sync-alt"></i> Generate Questions</button>
+        </div>
+      </div>
+      <div id="practiceContent" class="practice-content">
+        <div class="practice-placeholder">
+          <i class="fas fa-lightbulb"></i>
+          <p>Select a subject and click "Generate Questions" to start practicing!</p>
+        </div>
+      </div>
+      <div class="practice-score hidden" id="practiceScore">
+        <div class="score-card">
+          <h3>Your Score</h3>
+          <div class="score-value" id="scoreValue">0/0</div>
+          <button class="btn btn-primary" id="retryBtn"><i class="fas fa-redo"></i> Try Again</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== STUDY MATERIALS VIEW ==================== -->
+    <section class="view materials-view hidden" id="materialsView">
+      <div class="view-header">
+        <h1><i class="fas fa-folder-open"></i> Study Materials & PDFs</h1>
+        <div class="materials-header-actions">
+          <select id="materialSubjectFilter" class="filter-select">
+            <option value="all">All Subjects</option>
+          </select>
+          <label for="materialFileInput" class="btn btn-primary">
+            <i class="fas fa-cloud-upload-alt"></i> Upload PDF / Notes
+          </label>
+          <input type="file" id="materialFileInput" accept=".pdf,.doc,.docx,.txt" multiple style="display:none;">
+        </div>
+      </div>
+
+      <!-- Upload Drop Zone Card -->
+      <div class="card upload-card" id="dropZone">
+        <div class="upload-area">
+          <i class="fas fa-file-pdf upload-icon"></i>
+          <h3>Upload Subject Documents & Practice Material</h3>
+          <p>Drag and drop PDF files, notes, or past papers here, or click to browse</p>
+          <div class="upload-meta">
+            <div class="field-group" style="max-width:240px;margin: 12px auto 0;">
+              <label style="font-size:0.75rem;">Assign To Subject</label>
+              <select id="uploadSubjectSelect" class="filter-select" style="width:100%;">
+                <option value="">Select Subject</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Materials List by Subject -->
+      <div id="materialsContent" class="materials-content">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PDF / MATERIAL PREVIEW MODAL -->
+  <div class="modal-overlay hidden" id="pdfPreviewModal">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3 id="pdfPreviewTitle"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Document Preview</h3>
+        <button class="modal-close" id="pdfPreviewClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body preview-body" id="pdfPreviewBody">
+        <iframe id="pdfPreviewFrame" src="" class="pdf-iframe"></iframe>
+      </div>
+      <div class="modal-footer">
+        <a id="pdfDownloadBtn" href="#" download="" class="btn btn-outline"><i class="fas fa-download"></i> Download</a>
+        <button class="btn btn-primary" id="pdfPreviewDone">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- CONFIRMATION MODAL -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Confirm</h3>
+        <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="modalCancel">Cancel</button>
+        <button class="btn btn-primary" id="modalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "exampilot",
+  "version": "1.0.0",
+  "description": "ExamPilot - AI Exam Preparation Planner",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
